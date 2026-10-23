@@ -1,0 +1,8 @@
+name: movielens_ratings
+source:
+  path: file:///data/landing/movielens/ml-latest-small/ratings.csv
+  format: csv
+  options:
+    header: "true"
+target:
+  path: s3a://bronze/movielens/ratings

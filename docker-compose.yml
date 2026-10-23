@@ -1,0 +1,67 @@
+x-spark-common: &spark-common
+  build: ./docker/spark
+  image: movie-spark:local
+  environment:
+    PYTHONPATH: /opt/project/src
+    CONFIG_ROOT: /opt/project/config
+    TMDB_API_KEY: ${TMDB_API_KEY}
+  volumes:
+    - ./conf/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf:ro
+    - ./src:/opt/project/src
+    - ./config:/opt/project/config
+    - ./scripts:/opt/project/scripts
+    - ./data:/data
+
+services:
+  seaweedfs:
+    image: chrislusf/seaweedfs:latest
+    container_name: seaweedfs
+    command: mini -dir=/data -s3.config=/etc/seaweedfs/s3config.json
+    ports:
+      - "8333:8333"   # S3 API
+      - "9333:9333"   # master (dùng cho weed shell)
+      - "8888:8888"     # Filer UI
+      - "23646:23646"   # Admin UI
+    volumes:
+      - seaweed-data:/data
+      - ./conf/seaweedfs-s3.json:/etc/seaweedfs/s3config.json:ro
+
+  spark-master:
+    <<: *spark-common
+    container_name: spark-master
+    hostname: spark-master
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
+    ports:
+      - "8081:8080"   # Master UI
+      - "7077:7077"
+      - "4040:4040"   # UI của job đang chạy
+
+  spark-worker:
+    <<: *spark-common
+    container_name: spark-worker
+    hostname: spark-worker
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077 --cores 2 --memory 2g
+    depends_on:
+      - spark-master
+    ports:
+      - "8082:8081"   # Worker UI
+
+  airflow:
+    build: ./docker/airflow
+    container_name: airflow
+    command: standalone
+    depends_on:
+      - spark-master
+    ports:
+      - "8080:8080"
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    group_add:
+      - "${DOCKER_GID:-999}"
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./config:/opt/airflow/config
+      - /var/run/docker.sock:/var/run/docker.sock
+
+volumes:
+  seaweed-data:

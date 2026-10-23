@@ -1,0 +1,15 @@
+# Secrets
+.env
+
+# Dữ liệu tải về (MovieLens chỉ dùng học tập, không đưa lên git)
+data/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store

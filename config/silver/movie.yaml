@@ -1,0 +1,23 @@
+name: movie
+source:
+  path: s3a://bronze/tmdb/movie_details
+  format: parquet
+  partition: p_date
+columns:
+  id:                {to: tmdb_id, type: int, nullable: false}
+  title:             {type: string, nullable: false}
+  release_date:      {type: date}
+  budget:            {type: long}
+  revenue:           {type: long}
+  runtime:           {type: int}
+  status:            {type: string}
+  genres:            {type: string}
+  original_language: {type: string}
+  overview:          {type: string}
+primary_key: [tmdb_id]
+cdc:
+  type: "5"
+writer:
+  type: scd4a_cdc5
+target:
+  path: s3a://silver/movie

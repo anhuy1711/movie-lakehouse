@@ -1,0 +1,8 @@
+name: movielens_links
+source:
+  path: file:///data/landing/movielens/ml-latest-small/links.csv
+  format: csv
+  options:
+    header: "true"
+target:
+  path: s3a://bronze/movielens/links

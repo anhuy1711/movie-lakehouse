@@ -1,0 +1,19 @@
+name: movie_daily_snapshot
+source:
+  path: s3a://bronze/tmdb/movie_details
+  format: parquet
+  partition: p_date
+columns:
+  id:           {to: tmdb_id,      type: int,    nullable: false}
+  popularity:   {type: double}
+  vote_average: {type: double, min: 0, max: 10}
+  vote_count:   {type: int}
+primary_key: [tmdb_id]
+cdc:
+  type: "1.1"
+  checkpoint_column: p_date
+writer:
+  type: partition_overwrite
+  partition_column: p_date
+target:
+  path: s3a://silver/movie_daily_snapshot

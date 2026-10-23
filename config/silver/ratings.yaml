@@ -1,0 +1,17 @@
+name: ratings
+source:
+  path: s3a://bronze/movielens/ratings
+  format: parquet
+columns:
+  userId:    {to: user_id,  type: int,    nullable: false}
+  movieId:   {to: movie_id, type: int,    nullable: false}
+  rating:    {to: rating,   type: double, nullable: false, min: 0.5, max: 5.0}
+  timestamp: {to: rated_at, type: timestamp, epoch: true, nullable: false}
+primary_key: [user_id, movie_id]
+cdc:
+  type: "1.1"
+  checkpoint_column: rated_at
+writer:
+  type: insert_only_merge
+target:
+  path: s3a://silver/ratings

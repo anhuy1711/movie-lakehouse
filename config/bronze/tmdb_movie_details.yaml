@@ -1,0 +1,7 @@
+name: tmdb_movie_details
+source:
+  path: file:///data/landing/tmdb/movie_details/p_date={p_date}/*.jsonl
+  format: json
+target:
+  path: s3a://bronze/tmdb/movie_details
+  partition_by: p_date
